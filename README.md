@@ -1,8 +1,8 @@
-# Label Assistant - Package Label Scanner and Email Generator
+# LabelAssistant - Package Label Scanner and Email Generator
 
 ## Overview
 
-Label Assistant is a Python application that uses your computer's camera to scan package labels, extract information using OCR (Optical Character Recognition), and automatically generate emails to notify recipients about their arrived packages. This application is designed to streamline the process of managing incoming packages in an office or mail room setting.
+LabelAssistant is a Python application that uses your computer's camera to scan package labels, extract information using OCR (Optical Character Recognition), and automatically generate emails to notify recipients about their arrived packages. This application is designed to streamline the process of managing incoming packages in an office or mail room setting.
 
 ## Features
 
@@ -12,10 +12,11 @@ Label Assistant is a Python application that uses your computer's camera to scan
 - Automatic email content generation using Google's Generative AI
 - User-friendly interface for editing and sending notification emails
 - Integration with a local directory to match recipient names with email addresses
+- Custom application icon for easy identification
 
 ## Prerequisites
 
-Before installing Label Assistant, ensure you have the following:
+Before installing LabelAssistant, ensure you have the following:
 
 1. Windows operating system
 2. Administrative privileges on your computer
@@ -33,6 +34,7 @@ The installation script will set up the following components:
 - Git
 - Required Python packages (customtkinter, opencv-python-headless, pillow, google-generativeai, pytesseract)
 - Tesseract OCR
+- A desktop shortcut with a custom icon
 
 ## Configuration
 
@@ -59,9 +61,23 @@ Before running the application, you need to set up a few things:
    - The installation script should have set up Tesseract OCR.
    - If you encounter issues, ensure that the Tesseract executable is in your system PATH.
 
+4. Changing the .jpg Directory:
+   - The application image directory is empty and will need to be updated to the project directory.
+   - To change this, locate the following line in `main.py`:
+     ```python
+     @staticmethod
+     def get_most_recent_jpg_image_path():
+        directory = "DIRECTORY_PATH"
+     ```
+   - Replace 'DIRECTORY_PATH' with your desired directory path.
+
+5. Custom Icon:
+   - The application uses a custom icon for the desktop shortcut.
+   - If you want to change the icon, replace the `app_icon.ico` file in the project root directory with your desired icon file (must be in .ico format).
+
 ## Usage
 
-1. Double-click the `run_app.bat` file in the project directory to start the application.
+1. Double-click the 'LabelAssistant' shortcut on your desktop to start the application.
 
 2. Using the application:
    - The main window will show a live feed from your camera.
@@ -85,11 +101,37 @@ Before running the application, you need to set up a few things:
 - If the camera feed doesn't appear, ensure your webcam is properly connected and not in use by another application.
 - If OCR results are poor, try adjusting the lighting or camera focus for a clearer image of the label.
 - If email addresses are not found, check that the recipient's name in the `directory.json` file matches exactly with the name extracted from the label.
+- If the application fails to start, ensure that all dependencies are correctly installed and that the virtual environment is activated.
+
+## Customization
+
+- To modify the email template, locate the `ocr()` method in `main.py` and adjust the `user_input` string.
+- To change the application's appearance, modify the CTk theme and widget styles in the `LabelAssistant` class.
 
 ## Support
 
-For issues, feature requests, or contributions, please open an issue on the project's GitHub repository.
+For issues, feature requests, or contributions, please open an issue on the project's GitHub repository: https://github.com/gmwilson34/Label-Assistant.git
 
 ## License
 
-[Specify your license information here]
+MIT License
+
+Copyright (c) 2024 Graham Wilson
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
