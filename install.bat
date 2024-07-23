@@ -52,6 +52,10 @@ echo @echo off > run_app.bat
 echo call venv\Scripts\activate >> run_app.bat
 echo python main.py >> run_app.bat
 
+:: Create a shortcut with the custom icon
+echo Creating shortcut with custom icon...
+powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\LabelAssistant.lnk'); $Shortcut.TargetPath = '%CD%\run_app.bat'; $Shortcut.IconLocation = '%CD%\app_icon.ico'; $Shortcut.Save()"
+
 echo Installation complete!
-echo To run the application, use the run_app.bat file.
+echo A shortcut 'LabelAssistant' has been created on your desktop.
 pause
