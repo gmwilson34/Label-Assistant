@@ -13,7 +13,7 @@ GOOGLE_API_KEY = ''
 genai.configure(api_key=GOOGLE_API_KEY)
 
 
-class CameraApp(ctk.CTk):
+class LabelAssistant(ctk.CTk):
     def __init__(self):
         super().__init__()
 
@@ -410,6 +410,6 @@ class CameraApp(ctk.CTk):
 
 
 if __name__ == "__main__":
-    app = CameraApp()
+    app = LabelAssistant()
     app.protocol("WM_DELETE_WINDOW", app.on_closing)
     app.mainloop()
