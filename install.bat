@@ -18,7 +18,7 @@ echo %1 > install_progress.flag
 :ReadProgressFlag
 if exist install_progress.flag (
     set /p PROGRESS=<install_progress.flag
-    echo Progress flag read: %PROGRESS%
+    echo Progress flag read: !PROGRESS!
 ) else (
     set PROGRESS=0
     echo No progress flag found, starting from scratch.
@@ -39,7 +39,7 @@ pause
 call :ReadProgressFlag
 
 :: Install Chocolatey
-if %PROGRESS% LSS 1 (
+if !PROGRESS! LSS 1 (
     echo Checking for Chocolatey...
     where choco >nul 2>&1
     if %errorlevel% neq 0 (
@@ -56,7 +56,7 @@ if %PROGRESS% LSS 1 (
 pause
 
 :: Install Python 3 (latest version)
-if %PROGRESS% LSS 2 (
+if !PROGRESS! LSS 2 (
     echo Checking for Python...
     where python >nul 2>&1
     if %errorlevel% neq 0 (
@@ -72,7 +72,7 @@ if %PROGRESS% LSS 2 (
 pause
 
 :: Install Git
-if %PROGRESS% LSS 3 (
+if !PROGRESS! LSS 3 (
     echo Checking for Git...
     where git >nul 2>&1
     if %errorlevel% neq 0 (
@@ -88,7 +88,7 @@ if %PROGRESS% LSS 3 (
 pause
 
 :: Clone the repository (replace with your actual repository URL)
-if %PROGRESS% LSS 4 (
+if !PROGRESS! LSS 4 (
     echo Cloning the repository...
     git clone https://github.com/gmwilson34/Label-Assistant
     call :CheckError
@@ -99,7 +99,7 @@ if %PROGRESS% LSS 4 (
 pause
 
 :: Create and activate virtual environment
-if %PROGRESS% LSS 5 (
+if !PROGRESS! LSS 5 (
     echo Creating virtual environment...
     python -m venv venv
     call :CheckError
@@ -110,7 +110,7 @@ if %PROGRESS% LSS 5 (
 pause
 
 :: Install dependencies
-if %PROGRESS% LSS 6 (
+if !PROGRESS! LSS 6 (
     echo Installing dependencies...
     pip install customtkinter opencv-python-headless pillow google-generativeai pytesseract
     call :CheckError
@@ -119,7 +119,7 @@ if %PROGRESS% LSS 6 (
 pause
 
 :: Install Tesseract OCR
-if %PROGRESS% LSS 7 (
+if !PROGRESS! LSS 7 (
     echo Installing Tesseract OCR...
     choco install tesseract -y
     call :CheckError
@@ -129,7 +129,7 @@ if %PROGRESS% LSS 7 (
 pause
 
 :: Set up Tesseract path (adjust if necessary)
-if %PROGRESS% LSS 8 (
+if !PROGRESS! LSS 8 (
     echo Setting up TESSDATA_PREFIX...
     setx TESSDATA_PREFIX "C:\Program Files\Tesseract-OCR\tessdata"
     call :CheckError
@@ -139,7 +139,7 @@ if %PROGRESS% LSS 8 (
 pause
 
 :: Create a batch file to run the application
-if %PROGRESS% LSS 9 (
+if !PROGRESS! LSS 9 (
     echo Creating run_app.bat...
     echo @echo off > run_app.bat
     echo call venv\Scripts\activate >> run_app.bat
@@ -150,7 +150,7 @@ if %PROGRESS% LSS 9 (
 pause
 
 :: Create a shortcut with the custom icon
-if %PROGRESS% LSS 10 (
+if !PROGRESS! LSS 10 (
     echo Creating shortcut with custom icon...
     powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\LabelAssistant.lnk'); $Shortcut.TargetPath = '%CD%\run_app.bat'; $Shortcut.IconLocation = '%CD%\app_icon.ico'; $Shortcut.Save()"
     call :CheckError
