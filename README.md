@@ -1,8 +1,8 @@
-# CameraApp - Package Label Scanner and Email Generator
+# Label Assistant - Package Label Scanner and Email Generator
 
 ## Overview
 
-CameraApp is a Python application that uses your computer's camera to scan package labels, extract information using OCR (Optical Character Recognition), and automatically generate emails to notify recipients about their arrived packages. This application is designed to streamline the process of managing incoming packages in an office or mail room setting.
+Label Assistant is a Python application that uses your computer's camera to scan package labels, extract information using OCR (Optical Character Recognition), and automatically generate emails to notify recipients about their arrived packages. This application is designed to streamline the process of managing incoming packages in an office or mail room setting.
 
 ## Features
 
@@ -15,7 +15,7 @@ CameraApp is a Python application that uses your computer's camera to scan packa
 
 ## Prerequisites
 
-Before installing CameraApp, ensure you have the following:
+Before installing Label Assistant, ensure you have the following:
 
 1. Windows operating system
 2. Administrative privileges on your computer
