@@ -18,8 +18,10 @@ echo %1 > install_progress.flag
 :ReadProgressFlag
 if exist install_progress.flag (
     set /p PROGRESS=<install_progress.flag
+    echo Progress flag read: %PROGRESS%
 ) else (
     set PROGRESS=0
+    echo No progress flag found, starting from scratch.
 )
 
 :: Check for administrative privileges
@@ -35,8 +37,6 @@ pause
 
 :: Read the progress flag
 call :ReadProgressFlag
-echo Current progress: %PROGRESS%
-pause
 
 :: Install Chocolatey
 if %PROGRESS% LSS 1 (
@@ -47,6 +47,7 @@ if %PROGRESS% LSS 1 (
         @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
         call :CheckError
         SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+        refreshenv
     ) else (
         echo Chocolatey is already installed.
     )
@@ -62,6 +63,7 @@ if %PROGRESS% LSS 2 (
         echo Installing Python 3...
         choco install python -y
         call :CheckError
+        refreshenv
     ) else (
         echo Python is already installed.
     )
@@ -77,6 +79,7 @@ if %PROGRESS% LSS 3 (
         echo Installing Git...
         choco install git -y
         call :CheckError
+        refreshenv
     ) else (
         echo Git is already installed.
     )
@@ -120,15 +123,17 @@ if %PROGRESS% LSS 7 (
     echo Installing Tesseract OCR...
     choco install tesseract -y
     call :CheckError
+    refreshenv
     call :SetProgressFlag 7
 )
 pause
 
 :: Set up Tesseract path (adjust if necessary)
 if %PROGRESS% LSS 8 (
-    echo Setting up Tesseract path...
+    echo Setting up TESSDATA_PREFIX...
     setx TESSDATA_PREFIX "C:\Program Files\Tesseract-OCR\tessdata"
     call :CheckError
+    refreshenv
     call :SetProgressFlag 8
 )
 pause
