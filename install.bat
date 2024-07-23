@@ -1,4 +1,3 @@
-@echo off
 SETLOCAL EnableDelayedExpansion
 
 :: Function to check for errors and pause if any
