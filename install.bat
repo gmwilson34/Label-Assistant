@@ -11,11 +11,16 @@ if %ERRORLEVEL% NEQ 0 (
 
 :: Function to set progress flag
 :SetProgressFlag
+echo Setting progress flag to %1
 echo %1 > install_progress.flag
 
 :: Function to read progress flag
 :ReadProgressFlag
-set /p PROGRESS=<install_progress.flag
+if exist install_progress.flag (
+    set /p PROGRESS=<install_progress.flag
+) else (
+    set PROGRESS=0
+)
 
 :: Check for administrative privileges
 NET SESSION >nul 2>&1
@@ -29,11 +34,9 @@ echo Administrative privileges confirmed.
 pause
 
 :: Read the progress flag
-if exist install_progress.flag (
-    call :ReadProgressFlag
-) else (
-    set PROGRESS=0
-)
+call :ReadProgressFlag
+echo Current progress: %PROGRESS%
+pause
 
 :: Install Chocolatey
 if %PROGRESS% LSS 1 (
