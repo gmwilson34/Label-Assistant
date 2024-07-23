@@ -1,184 +1,68 @@
 @echo off
-SETLOCAL EnableDelayedExpansion
+setlocal enabledelayedexpansion
 
-:: Enable command echoing for debugging
-@echo on
-
-:: Create a log file
-echo Starting script execution at %date% %time% > install_log.txt
-
-:: Function to log messages
-:LogMessage
-echo %date% %time% - %~1 >> install_log.txt
-echo %~1
-
-:: Function to check for errors and pause if any
-:CheckError
-if %ERRORLEVEL% NEQ 0 (
-    call :LogMessage "An error occurred during the last operation. Error code: %ERRORLEVEL%"
-    pause
-    exit /b %ERRORLEVEL%
-)
-
-:: Function to set progress flag
-:SetProgressFlag
-call :LogMessage "Setting progress flag to %1"
-echo %1 > install_progress.flag
-
-:: Function to read progress flag
-:ReadProgressFlag
-set PROGRESS=0
-if exist install_progress.flag (
-    set /p PROGRESS=<install_progress.flag
-)
-call :LogMessage "Progress flag read: !PROGRESS!"
-
-:: Check for administrative privileges
-call :LogMessage "Checking for administrative privileges..."
-NET SESSION >nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (
-    call :LogMessage "This script requires administrative privileges. Please run this script as an administrator."
+:: Check if running with administrator privileges
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo This script requires administrator privileges.
+    echo Please run this script as an administrator.
     pause
     exit /b 1
 )
-call :LogMessage "Administrative privileges confirmed."
-pause
 
-:: Read the progress flag
-call :LogMessage "Reading progress flag..."
-call :ReadProgressFlag
+:: Set up temporary directory
+set "TEMP_DIR=%TEMP%\Label-Assistant"
+mkdir "%TEMP_DIR%" 2>nul
 
-:: Install Chocolatey
-if !PROGRESS! LSS 1 (
-    call :LogMessage "Checking for Chocolatey..."
-    where choco >nul 2>&1
-    if %errorlevel% neq 0 (
-        call :LogMessage "Installing Chocolatey..."
-        @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))" || (
-            call :LogMessage "Failed to install Chocolatey."
-            exit /b 1
-        )
-        call :CheckError
-        SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
-        refreshenv
-    ) else (
-        call :LogMessage "Chocolatey is already installed."
-    )
-    call :SetProgressFlag 1
+:: Install Python if not already installed
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Installing Python...
+    curl -L "https://www.python.org/ftp/python/3.12.4/python-3.12.4-amd64.exe.asc" -o "%TEMP_DIR%\python_installer.exe"
+    "%TEMP_DIR%\python_installer.exe" /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
+    del "%TEMP_DIR%\python_installer.exe"
 )
-pause
 
-:: Install Python 3 (latest version)
-if !PROGRESS! LSS 2 (
-    echo Checking for Python...
-    where python >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Installing Python 3...
-        choco install python -y
-        call :CheckError
-        refreshenv
-    ) else (
-        echo Python is already installed.
-    )
-    call :SetProgressFlag 2
-)
-pause
+:: Refresh environment variables
+call refreshenv.cmd
 
-:: Install Git
-if !PROGRESS! LSS 3 (
-    echo Checking for Git...
-    where git >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Installing Git...
-        choco install git -y
-        call :CheckError
-        refreshenv
-    ) else (
-        echo Git is already installed.
-    )
-    call :SetProgressFlag 3
+:: Install Git if not already installed
+git --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Installing Git...
+    curl -L "https://github.com/git-for-windows/git/releases/download/v2.33.0.windows.2/Git-2.33.0.2-64-bit.exe" -o "%TEMP_DIR%\git_installer.exe"
+    "%TEMP_DIR%\git_installer.exe" /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"
+    del "%TEMP_DIR%\git_installer.exe"
 )
-pause
+
+:: Refresh environment variables again
+call refreshenv.cmd
 
 :: Clone the repository (replace with your actual repository URL)
-if !PROGRESS! LSS 4 (
-    echo Cloning the repository...
-    git clone https://github.com/gmwilson34/Label-Assistant
-    call :CheckError
-    cd Label-Assistant
-    call :CheckError
-    call :SetProgressFlag 4
-)
-pause
+git clone https://github.com/gmwilson34/Label-Assistant.git
+cd Label-Assistant
 
-:: Create and activate virtual environment
-if !PROGRESS! LSS 5 (
-    echo Creating virtual environment...
-    python -m venv venv
-    call :CheckError
-    call venv\Scripts\activate
-    call :CheckError
-    call :SetProgressFlag 5
-)
-pause
+:: Create and activate a virtual environment
+python -m venv venv
+call venv\Scripts\activate
 
 :: Install dependencies
-if !PROGRESS! LSS 6 (
-    echo Installing dependencies...
-    pip install customtkinter opencv-python-headless pillow google-generativeai pytesseract
-    call :CheckError
-    call :SetProgressFlag 6
-)
+pip install customtkinter opencv-python-headless Pillow google-generativeai pytesseract
+
+:: Create a shortcut to run the application
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%USERPROFILE%\Desktop\LabelAssistant.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%CD%\venv\Scripts\pythonw.exe" >> CreateShortcut.vbs
+echo oLink.Arguments = "%CD%\main.py" >> CreateShortcut.vbs
+echo oLink.WorkingDirectory = "%CD%" >> CreateShortcut.vbs
+echo oLink.IconLocation = "%CD%\icon.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript //nologo CreateShortcut.vbs
+del CreateShortcut.vbs
+
+:: Clean up
+rmdir /s /q "%TEMP_DIR%"
+
+echo Setup complete! A shortcut has been created on your desktop.
 pause
-
-:: Install Tesseract OCR
-if !PROGRESS! LSS 7 (
-    echo Installing Tesseract OCR...
-    choco install tesseract -y
-    call :CheckError
-    refreshenv
-    call :SetProgressFlag 7
-)
-pause
-
-:: Set up Tesseract path (adjust if necessary)
-if !PROGRESS! LSS 8 (
-    echo Setting up TESSDATA_PREFIX...
-    setx TESSDATA_PREFIX "C:\Program Files\Tesseract-OCR\tessdata"
-    call :CheckError
-    refreshenv
-    call :SetProgressFlag 8
-)
-pause
-
-:: Create a batch file to run the application
-if !PROGRESS! LSS 9 (
-    echo Creating run_app.bat...
-    echo @echo off > run_app.bat
-    echo call venv\Scripts\activate >> run_app.bat
-    echo python main.py >> run_app.bat
-    call :CheckError
-    call :SetProgressFlag 9
-)
-pause
-
-:: Create a shortcut with the custom icon
-if !PROGRESS! LSS 10 (
-    echo Creating shortcut with custom icon...
-    powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\LabelAssistant.lnk'); $Shortcut.TargetPath = '%CD%\run_app.bat'; $Shortcut.IconLocation = '%CD%\app_icon.ico'; $Shortcut.Save()"
-    call :CheckError
-    call :SetProgressFlag 10
-)
-pause
-
-call :LogMessage "Installation complete!"
-call :LogMessage "A shortcut 'LabelAssistant' has been created on your desktop."
-pause
-
-call :LogMessage "Press any key to exit..."
-pause >nul
-
-:: End of script
-call :LogMessage "Script execution completed."
-ENDLOCAL
-exit /b 0
