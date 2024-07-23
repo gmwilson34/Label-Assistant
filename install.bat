@@ -31,15 +31,11 @@ pause
 echo Installing Python 3...
 choco install python -y
 call :CheckError
-refreshenv
-call :CheckError
 pause
 
 :: Install Git
 echo Installing Git...
 choco install git -y
-call :CheckError
-refreshenv
 call :CheckError
 pause
 
@@ -53,7 +49,8 @@ pause
 
 :: Create and activate virtual environment
 echo Creating virtual environment...
-python -m venv venv
+set PYTHON_DIR="C:\Python39"  :: Adjust this to your Python install path if different
+%PYTHON_DIR%\python.exe -m venv venv
 call :CheckError
 call venv\Scripts\activate
 call :CheckError
@@ -69,14 +66,10 @@ pause
 echo Installing Tesseract OCR...
 choco install tesseract -y
 call :CheckError
-refreshenv
-call :CheckError
 pause
 
 :: Set up Tesseract path (adjust if necessary)
 setx TESSDATA_PREFIX "C:\Program Files\Tesseract-OCR\tessdata"
-call :CheckError
-refreshenv
 call :CheckError
 pause
 
