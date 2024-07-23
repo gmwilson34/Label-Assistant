@@ -9,6 +9,14 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b %ERRORLEVEL%
 )
 
+:: Function to set progress flag
+:SetProgressFlag
+echo %1 > install_progress.flag
+
+:: Function to read progress flag
+:ReadProgressFlag
+set /p PROGRESS=<install_progress.flag
+
 :: Check for administrative privileges
 NET SESSION >nul 2>&1
 IF %ERRORLEVEL% NEQ 0 (
@@ -20,88 +28,126 @@ IF %ERRORLEVEL% NEQ 0 (
 echo Administrative privileges confirmed.
 pause
 
-:: Install Chocolatey
-echo Checking for Chocolatey...
-where choco >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Installing Chocolatey...
-    @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
-    call :CheckError
-    SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+:: Read the progress flag
+if exist install_progress.flag (
+    call :ReadProgressFlag
 ) else (
-    echo Chocolatey is already installed.
+    set PROGRESS=0
+)
+
+:: Install Chocolatey
+if %PROGRESS% LSS 1 (
+    echo Checking for Chocolatey...
+    where choco >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Installing Chocolatey...
+        @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
+        call :CheckError
+        SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+    ) else (
+        echo Chocolatey is already installed.
+    )
+    call :SetProgressFlag 1
 )
 pause
 
 :: Install Python 3 (latest version)
-echo Checking for Python...
-where python >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Installing Python 3...
-    choco install python -y
-    call :CheckError
-) else (
-    echo Python is already installed.
+if %PROGRESS% LSS 2 (
+    echo Checking for Python...
+    where python >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Installing Python 3...
+        choco install python -y
+        call :CheckError
+    ) else (
+        echo Python is already installed.
+    )
+    call :SetProgressFlag 2
 )
 pause
 
 :: Install Git
-echo Checking for Git...
-where git >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Installing Git...
-    choco install git -y
-    call :CheckError
-) else (
-    echo Git is already installed.
+if %PROGRESS% LSS 3 (
+    echo Checking for Git...
+    where git >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Installing Git...
+        choco install git -y
+        call :CheckError
+    ) else (
+        echo Git is already installed.
+    )
+    call :SetProgressFlag 3
 )
 pause
 
 :: Clone the repository (replace with your actual repository URL)
-echo Cloning the repository...
-git clone https://github.com/gmwilson34/Label-Assistant
-call :CheckError
-cd Label-Assistant
-call :CheckError
+if %PROGRESS% LSS 4 (
+    echo Cloning the repository...
+    git clone https://github.com/gmwilson34/Label-Assistant
+    call :CheckError
+    cd Label-Assistant
+    call :CheckError
+    call :SetProgressFlag 4
+)
 pause
 
 :: Create and activate virtual environment
-echo Creating virtual environment...
-python -m venv venv
-call :CheckError
-call venv\Scripts\activate
-call :CheckError
+if %PROGRESS% LSS 5 (
+    echo Creating virtual environment...
+    python -m venv venv
+    call :CheckError
+    call venv\Scripts\activate
+    call :CheckError
+    call :SetProgressFlag 5
+)
 pause
 
 :: Install dependencies
-echo Installing dependencies...
-pip install customtkinter opencv-python-headless pillow google-generativeai pytesseract
-call :CheckError
+if %PROGRESS% LSS 6 (
+    echo Installing dependencies...
+    pip install customtkinter opencv-python-headless pillow google-generativeai pytesseract
+    call :CheckError
+    call :SetProgressFlag 6
+)
 pause
 
 :: Install Tesseract OCR
-echo Installing Tesseract OCR...
-choco install tesseract -y
-call :CheckError
+if %PROGRESS% LSS 7 (
+    echo Installing Tesseract OCR...
+    choco install tesseract -y
+    call :CheckError
+    call :SetProgressFlag 7
+)
 pause
 
 :: Set up Tesseract path (adjust if necessary)
-setx TESSDATA_PREFIX "C:\Program Files\Tesseract-OCR\tessdata"
-call :CheckError
+if %PROGRESS% LSS 8 (
+    echo Setting up Tesseract path...
+    setx TESSDATA_PREFIX "C:\Program Files\Tesseract-OCR\tessdata"
+    call :CheckError
+    call :SetProgressFlag 8
+)
 pause
 
 :: Create a batch file to run the application
-echo Creating run_app.bat...
-echo @echo off > run_app.bat
-echo call venv\Scripts\activate >> run_app.bat
-echo python main.py >> run_app.bat
-call :CheckError
+if %PROGRESS% LSS 9 (
+    echo Creating run_app.bat...
+    echo @echo off > run_app.bat
+    echo call venv\Scripts\activate >> run_app.bat
+    echo python main.py >> run_app.bat
+    call :CheckError
+    call :SetProgressFlag 9
+)
 pause
 
 :: Create a shortcut with the custom icon
-echo Creating shortcut with custom icon...
-powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\LabelAssistant.lnk'); $Shortcut.TargetPath = '%CD%\run_app.bat'; $Shortcut.IconLocation = '%CD%\app_icon.ico'; $Shortcut.Save()"
-call :CheckError
+if %PROGRESS% LSS 10 (
+    echo Creating shortcut with custom icon...
+    powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\LabelAssistant.lnk'); $Shortcut.TargetPath = '%CD%\run_app.bat'; $Shortcut.IconLocation = '%CD%\app_icon.ico'; $Shortcut.Save()"
+    call :CheckError
+    call :SetProgressFlag 10
+)
 pause
 
 echo Installation complete!
