@@ -16,13 +16,11 @@ echo %1 > install_progress.flag
 
 :: Function to read progress flag
 :ReadProgressFlag
+set PROGRESS=0
 if exist install_progress.flag (
     set /p PROGRESS=<install_progress.flag
-    echo Progress flag read: !PROGRESS!
-) else (
-    set PROGRESS=0
-    echo No progress flag found, starting from scratch.
 )
+echo Progress flag read: !PROGRESS!
 
 :: Check for administrative privileges
 NET SESSION >nul 2>&1
