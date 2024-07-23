@@ -49,26 +49,22 @@ call venv\Scripts\activate
 :: Install dependencies
 pip install customtkinter opencv-python-headless Pillow google-generativeai pytesseract
 
-:: Create a shortcut to run the application
-echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
-echo sLinkFile = "%USERPROFILE%\Desktop\LabelAssistant.lnk" >> CreateShortcut.vbs
-echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
-echo oLink.TargetPath = "%INSTALL_DIR%\venv\Scripts\pythonw.exe" >> CreateShortcut.vbs
-echo oLink.Arguments = "%INSTALL_DIR%\main.py" >> CreateShortcut.vbs
-echo oLink.WorkingDirectory = "%INSTALL_DIR%" >> CreateShortcut.vbs
-echo oLink.IconLocation = "%INSTALL_DIR%\icon.ico" >> CreateShortcut.vbs
-echo oLink.Save >> CreateShortcut.vbs
+:: Attempt to create a shortcut
+echo Creating shortcut...
+powershell -Command "& {$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\LabelAssistant.lnk'); $Shortcut.TargetPath = '%INSTALL_DIR%\venv\Scripts\pythonw.exe'; $Shortcut.Arguments = '%INSTALL_DIR%\main.py'; $Shortcut.WorkingDirectory = '%INSTALL_DIR%'; $Shortcut.IconLocation = '%INSTALL_DIR%\icon.ico'; $Shortcut.Save()}"
 
-cscript //nologo CreateShortcut.vbs
-if %errorlevel% neq 0 (
-    echo Failed to create shortcut. Creating a batch file instead.
+:: Check if shortcut was created successfully
+if not exist "%USERPROFILE%\Desktop\LabelAssistant.lnk" (
+    echo Shortcut creation failed. Creating a batch file instead.
     echo @echo off > "%USERPROFILE%\Desktop\LabelAssistant.bat"
-    echo call "%INSTALL_DIR%\venv\Scripts\activate.bat" >> "%USERPROFILE%\Desktop\LabelAssistant.bat"
-    echo python "%INSTALL_DIR%\main.py" >> "%USERPROFILE%\Desktop\LabelAssistant.bat"
+    echo cd /d "%INSTALL_DIR%" >> "%USERPROFILE%\Desktop\LabelAssistant.bat"
+    echo call venv\Scripts\activate.bat >> "%USERPROFILE%\Desktop\LabelAssistant.bat"
+    echo python main.py >> "%USERPROFILE%\Desktop\LabelAssistant.bat"
     echo pause >> "%USERPROFILE%\Desktop\LabelAssistant.bat"
+    echo Batch file created on your desktop.
+) else (
+    echo Shortcut created successfully.
 )
-
-del CreateShortcut.vbs
 
 echo Setup complete! A shortcut or batch file has been created on your desktop.
 pause
